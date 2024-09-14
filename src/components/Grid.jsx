@@ -105,7 +105,7 @@ const Grid = () => {
         {/* Right panel (Grid area) */}
         <div className="w-1/2 p-4">
           <div
-            className="border border-black dark:border-gray-300 relative bg-white dark:bg-gray-600"
+            className="border border-black dark:border-gray-300 relative bg-gray-300 dark:bg-gray-600"
             style={{ width: `${gridWidth}px`, height: `${gridHeight}px` }}
           >
             {/* Robot */}
