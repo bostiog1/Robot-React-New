@@ -12,8 +12,10 @@ const Grid = () => {
   const [arr, setArr] = useState([]); // Stores the task list
   const [sec, setSec] = useState(""); // Time input value
   const [isRunning, setIsRunning] = useState(false); // Manage task running state
-  const [wrong, setWrong] = useState(""); // Error message
-  const [isGameFinished, setIsGameFinished] = useState(false); // Game finished state
+  const [checkLimit, setCheckLimit] = useState(""); // Error message
+  const [checkInput, setCheckInput] = useState(""); // Error message
+  const [isGameFinished, setIsGameFinished] = useState(false); // Track if the game is finished
+  const [congratsMessage, setCongratsMessage] = useState(""); // Message when the game is finished
 
   // Get random positions for the home block
   const getRandomPosition = (gridSize, robotSize) => {
@@ -35,61 +37,66 @@ const Grid = () => {
 
   const checkGameOver = (newX, newY) => {
     if (newX === homePosition.x && newY === homePosition.y) {
-      setIsGameFinished(true); // Stop further movements
       setCongratsMessage("🎉 Congratulations! You've reached home! 🏡");
+      setIsGameFinished(true); // Stop further movements
     }
   };
 
-  
   // Move robot based on the direction
   const moveRobot = (direction) => {
     if (!isGameFinished) {
+      // Stop movement if the game is finished
+
       setPosition((prev) => {
         let newX = prev.x;
         let newY = prev.y;
         let limitMessage = ""; // Message to be displayed when hitting limits
 
-        if (direction === "Up") {
-          if (prev.y - robotSize >= 0) {
-            newY = prev.y - robotSize; // Move up
-          } else {
-            limitMessage = "Stop!! ✋⛔ You've hit the top limit!";
-          }
-        } else if (direction === "Down") {
-          if (prev.y + robotSize <= gridHeight - robotSize) {
-            newY = prev.y + robotSize; // Move down
-          } else {
-            limitMessage = "Stop!! ✋⛔ You've hit the bottom limit!";
-          }
-        } else if (direction === "Left") {
-          if (prev.x - robotSize >= 0) {
-            newX = prev.x - robotSize; // Move left
-          } else {
-            limitMessage = "Stop!! ✋⛔ You've hit the left limit!";
-          }
-        } else if (direction === "Right") {
-          if (prev.x + robotSize <= gridWidth - robotSize) {
-            newX = prev.x + robotSize; // Move right
-          } else {
-            limitMessage = "Stop!! ✋⛔ You've hit the right limit!";
-          }
+        switch (direction) {
+          case "Up":
+            if (prev.y - robotSize >= 0) {
+              newY = prev.y - robotSize; // Move up
+            } else {
+              limitMessage = "Stop!! ✋⛔ You've hit the top limit!";
+            }
+            break;
+          case "Down":
+            if (prev.y + robotSize <= gridHeight - robotSize) {
+              newY = prev.y + robotSize; // Move down
+            } else {
+              limitMessage = "Stop!! ✋⛔ You've hit the bottom limit!";
+            }
+            break;
+          case "Left":
+            if (prev.x - robotSize >= 0) {
+              newX = prev.x - robotSize; // Move left
+            } else {
+              limitMessage = "Stop!! ✋⛔ You've hit the left limit!";
+            }
+            break;
+          case "Right":
+            if (prev.x + robotSize <= gridWidth - robotSize) {
+              newX = prev.x + robotSize; // Move right
+            } else {
+              limitMessage = "Stop!! ✋⛔ You've hit the right limit!";
+            }
+            break;
+          default:
+            return prev; // No movement
         }
 
         if (limitMessage) {
-          setWrong(limitMessage); // Set the limit message as the error message
+          setCheckLimit(limitMessage); // Show limit message
         } else {
-          setWrong(""); // Clear the message if no limit is hit
+          setCheckLimit(""); // Clear the message if no limit is hit
         }
 
-        // Check if robot has reached the home block
-        if (newX === homePosition.x && newY === homePosition.y) {
-          setIsGameFinished(true); // Mark the game as finished
-        }
+        // Check if the robot has reached the home position
+        checkGameOver(newX, newY);
 
         return { x: newX, y: newY };
       });
     }
-    return;
   };
 
   // Attach the keydown event listener
@@ -103,7 +110,7 @@ const Grid = () => {
 
   // Add task to the task list
   const press = (direction) => {
-    setWrong("");
+    setCheckInput("");
 
     // Check if the input is not empty and greater than 0
     if (sec && sec > 0) {
@@ -113,7 +120,7 @@ const Grid = () => {
       // Reset input after adding task
       setSec("");
     } else {
-      setWrong("Please input a valid time! 😡");
+      setCheckInput("Please input a valid time! 😡");
     }
   };
 
@@ -165,7 +172,8 @@ const Grid = () => {
     });
     setIsGameFinished(false);
     setArr([]); // Reset task list
-    setWrong(""); // Clear messages
+    setCheckInput(""); // Clear messages
+    setCheckLimit(""); // Clear messages
   };
 
   return (
@@ -190,7 +198,11 @@ const Grid = () => {
               type="number"
               id="time"
               value={sec}
-              onChange={(e) => setSec(Number(e.target.value))}
+              onChange={(e) => {
+                // Convert the input value to a number, stripping any leading zeros
+                const value = Number(e.target.value);
+                setSec(value); // Set the state with the cleaned-up number
+              }}
               className="border border-gray-400 dark:border-gray-700 p-2 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               placeholder="Enter time"
               style={{ width: "150px" }}
@@ -246,7 +258,7 @@ const Grid = () => {
 
           {/* Error / Limit Message */}
           <p className="flex flex-col justify-center items-center text-red-500 mb-4">
-            {wrong}
+            {checkInput}
           </p>
 
           {/* Task List Container */}
@@ -297,10 +309,14 @@ const Grid = () => {
             ></div>
           </div>
 
+          <p className="flex flex-col justify-center items-center text-red-500 mb-4 mt-8">
+            {checkLimit}
+          </p>
+
           {isGameFinished && (
             <div className="text-center mt-4">
               <p className="text-2xl text-green-600 dark:text-green-400">
-                🎉 Congratulations! You've reached home!
+                {congratsMessage}
               </p>
               <button
                 onClick={restartGame}
