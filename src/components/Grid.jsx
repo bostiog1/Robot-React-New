@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import DarkModeToggle from "../services/DarkMode";
+import DarkModeToggle from "./DarkMode";
 
 const Grid = () => {
   const gridWidth = 600; // Manual width of the grid (in pixels)
@@ -101,12 +101,13 @@ const Grid = () => {
 
   // Attach the keydown event listener
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+    const handleKeyDown = (e) => {
+      moveRobot(e.key.replace("Arrow", ""));
     };
-  }, []);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isGameFinished]);
 
   // Add task to the task list
   const press = (direction) => {
@@ -126,10 +127,9 @@ const Grid = () => {
 
   // Remove Task (Delete first)
   const remove = () => {
-    if (arr.length === 0) return;
-    const newArr = [...arr];
-    newArr.shift();
-    setArr(newArr);
+    if (arr.length > 0) {
+      setArr((prev) => prev.slice(1));
+    }
   };
 
   // Wait 'n' seconds
