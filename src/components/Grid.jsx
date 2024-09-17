@@ -6,6 +6,7 @@ import TaskList from "./TaskList";
 import GameOver from "./GameOver";
 import DarkModeToggle from "./DarkMode";
 import { getRandomPosition, wait } from "../utils/utils";
+import Modal from "./Modal";
 
 const Grid = () => {
   const gridWidth = 600; // Width of the grid (in pixels)
@@ -20,6 +21,10 @@ const Grid = () => {
   const [checkInput, setCheckInput] = useState(""); // Error message for input validation
   const [isGameFinished, setIsGameFinished] = useState(false); // Track if the game is finished
   const [congratsMessage, setCongratsMessage] = useState(""); // Congratulations message
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   const [homePosition, setHomePosition] = useState({
     x: getRandomPosition(gridWidth, robotSize),
@@ -170,6 +175,21 @@ const Grid = () => {
       </div>
 
       <DarkModeToggle />
+
+      {/* Button to Open Modal */}
+      <div className="fixed bottom-20 right-10">
+        <button
+          onClick={openModal}
+          className="fixed w-10 h-10 bottom-20 right-10 bg-neutral-900 dark:bg-white 
+        rounded-full text-white dark:text-black font-semibold flex items-center justify-center shadow-lg 
+        transition-transform duration-300 transform hover:scale-110"
+        >
+          ℹ️
+        </button>
+      </div>
+
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
 };
